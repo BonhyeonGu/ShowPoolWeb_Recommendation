@@ -11,10 +11,10 @@ def dbInit():
     newCol = db['users']
     for i in range(1, 4):
         user = {
-            "id" : "user%d" % (i),
+            "id" : "user0%d" % (i),
             "pw" : "1234"
         }
-        newCol.insert(user)
+        newCol.insert_one(user)
 
 def main():
     print("a")

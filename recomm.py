@@ -1,8 +1,8 @@
 class Recomm():
-    def __init__(self, clickdID, clickedInfo):
+    def __init__(self, allID:list, allData:dict, clickdID:list):
+        self.allID = allID
+        self.allData = allData
         self.clickdID = clickdID
-        self.clickedInfo = clickedInfo
 
     def run(self):
         print("여기를 수정해주세요")
-        print(self.clickdID, self.clickedInfo)

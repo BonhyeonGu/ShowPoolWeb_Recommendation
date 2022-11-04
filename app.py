@@ -3,6 +3,7 @@ from datetime import datetime
 from hashlib import sha256
 
 from secret.db import mongo_dbid, mongo_dbpw, mongo_dbaddr, mongo_dbport
+from neo import Neo
 from recomm import Recomm
 #-------------------------------------------------------------
 client = MongoClient(host=mongo_dbaddr, port=mongo_dbport, username=mongo_dbid, password=mongo_dbpw)
@@ -11,7 +12,7 @@ doc = db['users']
 #-------------------------------------------------------------
 userLastClick = dict()
 #-------------------------------------------------------------
-REF_NUM = 10 #참고할 영상 개수, 웹사이트와 동일하게 할 것
+REF_NUM = 3 #참고할 영상 개수, 웹사이트와 동일하게 할 것
 #-------------------------------------------------------------
 
 def dbInit():
@@ -23,7 +24,6 @@ def dbInit():
             "id" : "user0%d" % (i),
             "pw" : "1234",
             "clickedID" : (),
-            "clickedInfo" : (),
             "recommID" : (),
             "time_lastclick" : "x",
             "time_lastupdate" : "x"
@@ -34,10 +34,11 @@ def mainRoutine():
     while True:
         for user_info in doc.find():
             if (user_info['id'] not in userLastClick) or \
-                (userLastClick[user_info['id']] != sha256(user_info['time_lastclick'].decode('utf-8'))):
+                (userLastClick[user_info['id']] != user_info['time_lastclick']):
                 print("%s is changed, update start"%(user_info['id']))
-                recomm = Recomm(user_info['clickedID'], user_info['clickedInfo']).run()
-                userLastClick['id'] = sha256(user_info['time_lastclick'].encode('utf-8'))
+                allID, allData = Neo().runAll()
+                recomm = Recomm(allID, allData, user_info['clickedID']).run()
+                userLastClick[user_info['id']] = user_info['time_lastclick']
                 nowDate = datetime.today().strftime("%Y%m%d%H%M%S")
                 doc.update_one({"id" : user_info['id']}, {"$set":{"time_lastupdate" : nowDate}})
             else:

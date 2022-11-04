@@ -1,5 +1,4 @@
 from neo4j import GraphDatabase
-
 from secret.db import neo_dbid, neo_dbpw, neo_dbaddr, neo_dbport
 class Neo:
     def __init__(self):
@@ -25,16 +24,16 @@ class Neo:
         yid=yid
         )
         ans = list(reversed([(row["s"]["data"], row["c"]["data"])for row in result]))
-        ret = []
-        tmp = []
-        idx = '0'
+        compsCount = len(ans) // 5
+        tempRet = dict()
         for i in ans:
-            if i[0] != idx:
-                idx = i[0]
-                ret.append(tmp)
-                tmp = []
-            tmp.append(i[1])
-        ret.append(tmp)
+            try:
+                tempRet[i[0]].append(i[1])
+            except KeyError:
+                tempRet[i[0]] = [i[1]]
+        ret = []
+        for i in range(0, compsCount):
+            ret.append(tempRet[str(i)])
         return ret
 
     #해당 컴포넌트가 포함되어있는 비디오 조회 in=>Tangent, ret=>
@@ -56,6 +55,13 @@ class Neo:
                 rets = session.read_transaction(self.getKC_Videos, arg1)
         return rets
 
+    def runAll(self):
+        allDict = dict()
+        ids = self.runQuery(0)
+        for id in ids:
+            allDict[id] = self.runQuery(1, id)
+        return ids, allDict
+            
 #N = Neo()
-#a1 = N.runQuery(1, "d-o3eB9sfls")
+#a1 = N.runQuery(1, "GqmQg-cszw4")
 #print(a1)

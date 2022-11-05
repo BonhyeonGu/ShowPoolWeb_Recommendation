@@ -76,6 +76,7 @@ class Recomm():
 
         kcGraph = self._graph(kcList)
         kcDict = dict()
+        count = 0
         if len(kcGraph) > 0:
             nowNode = kcGraph[0]
             for i in range(len(kcGraph)):
@@ -92,6 +93,8 @@ class Recomm():
                         kcDict[nowNode[0]]+=1
                     except KeyError:
                         kcDict[nowNode[0]]=1
+                        
+                    count+=1
 
                     if np.random.rand() < 0.1:
                         break;
@@ -115,7 +118,7 @@ class Recomm():
                 for kc in segment:
                     weightDict[vidID+" ~ "+str(segCount)] = 0.0
                     try:
-                        weightDict[vidID+" ~ "+str(segCount)] += kcDict[kc]/(segNum*5)
+                        weightDict[vidID+" ~ "+str(segCount)] += kcDict[kc]/(count)
                     except KeyError:
                         continue
 

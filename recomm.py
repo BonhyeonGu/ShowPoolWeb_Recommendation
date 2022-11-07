@@ -17,56 +17,48 @@ class Recomm():
         self.clickdID = clickdID
         self.resultNum = resultNum
         
-    def run(self):
-        segNum = 0
+    def run(self, arg=1):
+        """
+        기본적인 코사인 유사도를 변형한 추천 방법
+
+        arg: 추천 결과의 종류에 대한 매개변수 0: segment, 1: video
+        """
+        clikedSegNum = 0
         kcDict = dict()
         clickedSet = set(self.clickdID)
 
         #시청한 영상의 세그먼트에 있는 각각의 kc의 개수를 센다.
         for vidID in self.clickdID:
-            segNum += len(self.allData[vidID])
+            clikedSegNum += len(self.allData[vidID])
             for segment in self.allData[vidID]:
                 for kc in segment:
                     try:
                         kcDict[kc] += 1
                     except KeyError:
                         kcDict[kc] = 1
-
-        weightDict = dict()
-
         #전체 영상의 kc를 확인하여 각 가중치를 더한다.
-        for vidID in self.allID:
-            if vidID in clickedSet:
-                continue
-            segCount = 0
-            for segment in self.allData[vidID]:
-                
-                for kc in segment:
-                    weightDict[vidID+" ~ "+str(segCount)] = 0.0
-                    try:
-                        weightDict[vidID+" ~ "+str(segCount)] += kcDict[kc]/(segNum*5)
-                    except KeyError:
-                        continue
-
-                segCount += 1            
-
-        #가중치가 큰 순으로 정렬 후 self.resultNum 개의 결과 반환
-        s = sorted(weightDict.items(), key=operator.itemgetter(1), reverse=True)
+        if(arg == 0):
+            result = self._calcWeightSegment(kcDict, clickedSet, clikedSegNum*5)
+                  
+        elif(arg == 1):
+            result = self._calcWeightVideo(kcDict, clickedSet, clikedSegNum*5)
         
-        result = []
-        for i in s:
-            idx = i[0].find(" ~ ")
-            result.append((i[0][:idx],i[0][idx+3:],i[1]))
+        #self.resultNum 개의 결과 반환
         return result[:self.resultNum]
 
-    def RWR(self):
-        segNum = 0
+    def RWR(self, arg=1):
+        """
+        그래프에 대한 RWR
+
+        arg: 추천 결과의 종류에 대한 매개변수 0: segment, 1: video
+        """
+        clikedSegNum = 0
         kcDict = dict()
         clickedSet = set(self.clickdID)
 
         #시청한 영상의 세그먼트에 있는 각각의 kc의 개수를 센다.
         for vidID in self.clickdID:
-            segNum += len(self.allData[vidID])
+            clikedSegNum += len(self.allData[vidID])
             for segment in self.allData[vidID]:
                 for kc in segment:
                     try:
@@ -82,10 +74,10 @@ class Recomm():
         if len(kcGraph) > 0:
             nowNode = kcGraph[0]
             for i in range(len(kcGraph)):
-                p = np.random.rand()
+                p = np.random.uniform(low=0.0, high=1.0, size=1)
                 sum = 0
                 for j in kcGraph:
-                    sum+= j[1] / (segNum*5)
+                    sum+= j[1] / (clikedSegNum*5)
                     if p < sum:
                         nowNode = j
                         break
@@ -98,41 +90,24 @@ class Recomm():
                         
                     count+=1
 
-                    if np.random.rand() < 0.1:
+                    if np.random.uniform(low=0.0, high=1.0, size=1) < 0.1:
                         break
                     sum = 0
-                    p=np.random.rand()
+                    p=np.random.uniform(low=0.0, high=1.0, size=1)
                     for j in nowNode[2]:
                         sum+=j[0]
                         if p < sum:
                             nowNode = kcGraph[j[1]]
                             break
-        #
-        weightDict = dict()
 
         #전체 영상의 kc를 확인하여 각 가중치를 더한다.
-        for vidID in self.allID:
-            if vidID in clickedSet:
-                continue
-            segCount = 0
-            for segment in self.allData[vidID]:
-                
-                for kc in segment:
-                    weightDict[vidID+" ~ "+str(segCount)] = 0.0
-                    try:
-                        weightDict[vidID+" ~ "+str(segCount)] += kcDict[kc]/(count)
-                    except KeyError:
-                        continue
-
-                segCount += 1            
-
-        #가중치가 큰 순으로 정렬 후 self.resultNum 개의 결과 반환
-        s = sorted(weightDict.items(), key=operator.itemgetter(1), reverse=True)
+        if(arg == 0):
+            result = self._calcWeightSegment(kcDict, clickedSet, count)
+                  
+        elif(arg == 1):
+            result = self._calcWeightVideo(kcDict, clickedSet, count)
         
-        result = []
-        for i in s:
-            idx = i[0].find(" ~ ")
-            result.append((i[0][:idx],i[0][idx+3:],i[1]))
+        #self.resultNum 개의 결과 반환
         return result[:self.resultNum]
 
     def _graph(self, s:list):
@@ -196,3 +171,51 @@ class Recomm():
             SR = 1- numerator / denominator
         
         return SR 
+
+    def _calcWeightSegment(self, kcDict, clickedSet, den):
+        weightDict = dict()
+        for vidID in self.allID:
+            if vidID in clickedSet:
+                continue
+            segCount = 0
+            for segment in self.allData[vidID]:
+                
+                for kc in segment:
+                    weightDict[vidID+" ~ "+str(segCount)] = 0.0
+                    try:
+                        weightDict[vidID+" ~ "+str(segCount)] += kcDict[kc]/den
+                    except KeyError:
+                        continue
+
+                segCount += 1   
+
+        s = sorted(weightDict.items(), key=operator.itemgetter(1), reverse=True)
+        
+        result = []
+        for i in s:
+            idx = i[0].find(" ~ ")
+            result.append((i[0][:idx],i[0][idx+3:],i[1]))
+        return result
+    def _calcWeightVideo(self, kcDict, clickedSet, den):
+        weightDict = dict()
+        for vidID in self.allID:
+            if vidID in clickedSet:
+                continue
+            segCount = 0
+            weightDict[vidID] = 0.0
+
+            for segment in self.allData[vidID]:
+                
+                for kc in segment:
+                    try:
+                        weightDict[vidID] += kcDict[kc]/den
+                    except KeyError:
+                        continue
+
+                segCount += 1  
+
+            weightDict[vidID] = weightDict[vidID]/segCount
+
+        s = sorted(weightDict.items(), key=operator.itemgetter(1), reverse=True)
+        
+        return s   

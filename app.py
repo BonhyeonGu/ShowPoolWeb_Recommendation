@@ -17,6 +17,8 @@ SLEEP_SEC = 5
 REF_NUM = 3 #참고할 영상 개수, 웹사이트와 동일하게 할 것
 LOACATION_TITLE2ID = "C:/Users/8whwh/Git/Reasoning_over_Knowledge_Component_Streams/ComTittleToID.pkl"
 LOACATION_BACKLINKS = "C:/Users/8whwh/Git/Reasoning_over_Knowledge_Component_Streams/backlinks/"
+#LOACATION_TITLE2ID = "C:/Users/MY/.vscode/tt/Wikification_web/Wikification_web/ComTittleToID.pkl"
+#LOACATION_BACKLINKS = "C:/Users/MY/.vscode/tt/Wikification_web/Wikification_web/backlinks/"
 #-------------------------------------------------------------
 
 def dbInit():

@@ -1,15 +1,17 @@
 import operator
 import pickle as pic
 import numpy as np
-from scipy.stats import norm
-
 from math import log2
+
 def getBacklinks(fileName):
         with open(fileName,'rb') as f:
             ret = pic.load(f)
         return ret
+
 class Recomm():
-    def __init__(self, allID:list, allData:dict, clickdID:list, resultNum=6):
+    def __init__(self, title2Id:dict, LOACATION_BACKLINKS, allID:list, allData:dict, clickdID:list, resultNum=6):
+        self.title2Id = title2Id
+        self.LOACATION_BACKLINKS = LOACATION_BACKLINKS
         self.allID = allID
         self.allData = allData
         self.clickdID = clickdID
@@ -86,7 +88,7 @@ class Recomm():
                     sum+= j[1] / (segNum*5)
                     if p < sum:
                         nowNode = j
-                        break;
+                        break
 
                 while(True):
                     try:
@@ -97,14 +99,14 @@ class Recomm():
                     count+=1
 
                     if np.random.rand() < 0.1:
-                        break;
+                        break
                     sum = 0
                     p=np.random.rand()
                     for j in nowNode[2]:
                         sum+=j[0]
                         if p < sum:
                             nowNode = kcGraph[j[1]]
-                            break;
+                            break
         #
         weightDict = dict()
 
@@ -140,15 +142,12 @@ class Recomm():
         backlink_list = list()
         kcList = list()
         #backlink집합을 가지는 튜플을 만든다
-        with open("C:/Users/MY/.vscode/tt/Wikification_web/Wikification_web/ComTittleToID.pkl",'rb') as f:
-            title2Id = pic.load(f)
-        
         for kc in s:
             kcList.append((kc[0], kc[1],[]))
-            backlink_list.append(getBacklinks("C:/Users/MY/.vscode/tt/Wikification_web/Wikification_web/backlinks/"+str(title2Id[kc[0].encode()]) + "_backlinks.pickle"))
+            backlink_list.append(getBacklinks(self.LOACATION_BACKLINKS + str(self.title2Id[kc[0].encode()]) + "_backlinks.pickle"))
         
         backlink_tuple = tuple(backlink_list)
-        del(title2Id)
+        del(self.title2Id)
         i = -1
         for startVertex in kcList:
             i+=1

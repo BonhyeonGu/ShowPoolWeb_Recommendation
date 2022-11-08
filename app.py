@@ -50,9 +50,9 @@ def mainRoutine():
                 print("%s is changed, update start"%(user_info['id']))
                 allID, allData = Neo().runAll()
                 #---------------------------------------------------------------------------------------------
-                recomm = Recomm(title2Id, LOACATION_BACKLINKS, allID, allData, user_info['clickedID']).run()
+                recomm = Recomm(title2Id, LOACATION_BACKLINKS, allID, allData, user_info['clickedID'], 6).run()
                 doc.update_one({"id" : user_info['id']}, {"$set":{"recommID1" : recomm}})
-                recomm = Recomm(title2Id, LOACATION_BACKLINKS, allID, allData, user_info['clickedID']).RWR()
+                recomm = Recomm(title2Id, LOACATION_BACKLINKS, allID, allData, user_info['clickedID'], 6).RWR()
                 doc.update_one({"id" : user_info['id']}, {"$set":{"recommID2" : recomm}})
                 #---------------------------------------------------------------------------------------------
                 userLastClick[user_info['id']] = user_info['time_lastclick']

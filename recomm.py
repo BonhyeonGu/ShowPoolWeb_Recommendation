@@ -67,45 +67,30 @@ class Recomm():
                         kcDict[kc] = 1
 
         kcList = sorted(kcDict.items(), key=operator.itemgetter(1), reverse=True)
-
-        kcGraph = self._graph(kcList)
+        
+        matrix = self._graph(kcList)
+        P = np.zeros(len(kcList))
+        for i in range(len(kcList)):
+            P[i]=kcList[i][1]/(clikedSegNum*5)
         kcDict = dict()
-        count = 0
-        if len(kcGraph) > 0:
-            nowNode = kcGraph[0]
-            for i in range(len(kcGraph)):
-                p = np.random.uniform(low=0.0, high=1.0, size=1)
-                sum = 0
-                for j in kcGraph:
-                    sum+= j[1] / (clikedSegNum*5)
-                    if p < sum:
-                        nowNode = j
-                        break
+        
+        r=P
+        for iter in range(50):
+            r = 0.85 * np.dot(np.transpose(matrix),r) + 0.15*P
+        i = 0
 
-                while(True):
-                    try:
-                        kcDict[nowNode[0]]+=1
-                    except KeyError:
-                        kcDict[nowNode[0]]=1
-                        
-                    count+=1
-
-                    if np.random.uniform(low=0.0, high=1.0, size=1) < 0.1:
-                        break
-                    sum = 0
-                    p=np.random.uniform(low=0.0, high=1.0, size=1)
-                    for j in nowNode[2]:
-                        sum+=j[0]
-                        if p < sum:
-                            nowNode = kcGraph[j[1]]
-                            break
+        den = 0
+        for t in kcList:
+            kcDict[t[0]] = r[i]
+            den+=r[i]
+            i+=1
 
         #전체 영상의 kc를 확인하여 각 가중치를 더한다.
         if(arg == 0):
-            result = self._calcWeightSegment(kcDict, clickedSet, count)
+            result = self._calcWeightSegment(kcDict, clickedSet, den)
                   
         elif(arg == 1):
-            result = self._calcWeightVideo(kcDict, clickedSet, count)
+            result = self._calcWeightVideo(kcDict, clickedSet, den)
         
         #self.resultNum 개의 결과 반환
         return result[:self.resultNum]
@@ -116,39 +101,36 @@ class Recomm():
         N=1633324#전체 아이디 개수
         backlink_list = list()
         kcList = list()
+
         #backlink집합을 가지는 튜플을 만든다
         for kc in s:
             kcList.append((kc[0], kc[1],[]))
             backlink_list.append(getBacklinks(self.LOACATION_BACKLINKS + str(self.title2Id[kc[0].encode()]) + "_backlinks.pickle"))
         
         backlink_tuple = tuple(backlink_list)
-        del(self.title2Id)
-        i = -1
-        for startVertex in kcList:
-            i+=1
-            j=i
-            for endVertex in kcList[i+1:]:
-                j+=1
-                if(i == j):#자기자신을 가리키는 간선 안생김
-                    continue
-                #i에서 j로
+        #del(self.title2Id)
+        matrix = np.zeros((len(kcList),len(kcList)))
+        
+        for i in range(len(kcList)):
+            for j in range(i+1,len(kcList[:])):
                 SR = self._calcSR(backlink_tuple[i],backlink_tuple[j],N)
 
                 if(SR > 0):#SR값이 0보다커야 간선 추가함
-                    startVertex[2].append([SR, j])
-                    endVertex[2].append([SR, i])
+                    matrix[i][j]=SR
+                    matrix[j][i]=SR
+                    
 
         #SR 값을 각 노드에 대해 정규화
-        for vertex in kcList:
+        i=0
+        for arr in matrix:
             sumSR = 0
-            vertex[2].sort(reverse = True)
-            for n in vertex[2]:
-                sumSR += n[0]
+            for n in arr:
+                sumSR += n
 
-            for n in range(len(vertex[2])):
-                vertex[2][n][0] = vertex[2][n][0] / sumSR
-
-        return kcList
+            if sumSR>0.0:
+                matrix[i]=matrix[i]/sumSR
+            i+=1
+        return matrix
 
     def _calcSR(self, start_set:set, end_set:set, N:int) -> float:
             

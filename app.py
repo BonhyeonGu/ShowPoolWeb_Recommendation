@@ -15,8 +15,12 @@ userLastClick = dict()
 #-------------------------------------------------------------
 SLEEP_SEC = 5
 REF_NUM = 3 #참고할 영상 개수, 웹사이트와 동일하게 할 것
-LOACATION_TITLE2ID = "C:/Users/8whwh/Git/Reasoning_over_Knowledge_Component_Streams/ComTittleToID.pkl"
-LOACATION_BACKLINKS = "C:/Users/8whwh/Git/Reasoning_over_Knowledge_Component_Streams/backlinks/"
+
+#경로 도커파일에서 쓸 수 있는 것을 기준으로 푸시함!
+LOACATION_TITLE2ID = "../rk/ComTittleToID.pkl"
+LOACATION_BACKLINKS = "../rk/backlinks/"
+#LOACATION_TITLE2ID = "C:/Users/8whwh/Git/Reasoning_over_Knowledge_Component_Streams/ComTittleToID.pkl"
+#LOACATION_BACKLINKS = "C:/Users/8whwh/Git/Reasoning_over_Knowledge_Component_Streams/backlinks/"
 #LOACATION_TITLE2ID = "C:/Users/MY/.vscode/tt/Wikification_web/Wikification_web/ComTittleToID.pkl"
 #LOACATION_BACKLINKS = "C:/Users/MY/.vscode/tt/Wikification_web/Wikification_web/backlinks/"
 #-------------------------------------------------------------

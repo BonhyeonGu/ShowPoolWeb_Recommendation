@@ -51,7 +51,7 @@ def mainRoutine():
         for user_info in doc.find():
             if (user_info['id'] not in userLastClick) or \
                 (userLastClick[user_info['id']] != user_info['time_lastclick']):
-                print("%s is changed, update start"%(user_info['id']))
+                #print("%s is changed, update start"%(user_info['id']))
                 allID, allData = Neo().runAll()
                 #---------------------------------------------------------------------------------------------
                 recomm = Recomm(title2Id, LOACATION_BACKLINKS, allID, allData, user_info['clickedID'], 6).run()
@@ -62,9 +62,9 @@ def mainRoutine():
                 userLastClick[user_info['id']] = user_info['time_lastclick']
                 nowDate = datetime.today().strftime("%Y%m%d%H%M%S")
                 doc.update_one({"id" : user_info['id']}, {"$set":{"time_lastupdate" : nowDate}})
-            else:
-                print("%s is not changed, update skip"%(user_info['id']))
-            print("process %dsecond sleep"%(SLEEP_SEC))
+            #else:
+                #print("%s is not changed, update skip"%(user_info['id']))
+            #print("process %dsecond sleep"%(SLEEP_SEC))
             time.sleep(SLEEP_SEC)
 
 def main():
